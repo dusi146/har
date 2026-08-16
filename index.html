@@ -13,86 +13,132 @@
             background-color: #020205; 
             color: #e2e8f0; 
             background-image: 
-                radial-gradient(circle at 15% 50%, rgba(14, 165, 233, 0.08), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(217, 70, 239, 0.08), transparent 25%);
+                radial-gradient(circle at 20% 40%, rgba(14, 165, 233, 0.1), transparent 30%),
+                radial-gradient(circle at 80% 60%, rgba(217, 70, 239, 0.1), transparent 30%);
+            overflow: hidden;
         }
+        
+        /* Hiệu ứng lưới background trôi */
+        .cyber-grid {
+            position: absolute; inset: 0; z-index: -1; pointer-events: none;
+            background-image: linear-gradient(rgba(14, 165, 233, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(14, 165, 233, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+            animation: gridMove 15s linear infinite;
+        }
+        @keyframes gridMove { from { background-position: 0 0; } to { background-position: 0 40px; } }
+
+        /* Panel chính */
         .glass-panel { 
-            background: linear-gradient(145deg, rgba(10, 15, 28, 0.8), rgba(5, 8, 16, 0.9));
+            background: linear-gradient(145deg, rgba(10, 15, 28, 0.85), rgba(5, 8, 16, 0.95));
             border: 1px solid rgba(14, 165, 233, 0.4); 
-            backdrop-filter: blur(16px);
-            box-shadow: 0 0 30px rgba(14, 165, 233, 0.15), inset 0 0 20px rgba(14, 165, 233, 0.05);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(14, 165, 233, 0.1);
+            animation: float 6s ease-in-out infinite;
         }
-        .text-glow-cyan { text-shadow: 0 0 15px rgba(14, 165, 233, 0.6); }
-        .text-glow-magenta { text-shadow: 0 0 15px rgba(217, 70, 239, 0.6); }
-        .pulse-border { animation: pulseBorder 2s infinite; }
-        @keyframes pulseBorder {
-            0% { border-color: rgba(14, 165, 233, 0.3); }
-            50% { border-color: rgba(14, 165, 233, 0.8); box-shadow: 0 0 15px rgba(14, 165, 233, 0.2); }
-            100% { border-color: rgba(14, 165, 233, 0.3); }
+        
+        /* Text Neon */
+        .text-glow-cyan { text-shadow: 0 0 15px rgba(14, 165, 233, 0.8); }
+        .text-glow-magenta { text-shadow: 0 0 15px rgba(217, 70, 239, 0.8); }
+        .text-glow-success { text-shadow: 0 0 15px rgba(16, 185, 129, 0.8); }
+
+        /* Khung Upload Viền Chớp & Tia Quét */
+        .upload-box { position: relative; overflow: hidden; }
+        .upload-box::before {
+            content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 2px;
+            background: linear-gradient(45deg, transparent, rgba(14, 165, 233, 0.8), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            animation: borderSpin 4s linear infinite;
         }
-        /* Notification overlay */
-        #redirectOverlay { transition: opacity 0.4s ease, visibility 0.4s ease; }
+        .scan-line {
+            position: absolute; left: 0; top: -20%; width: 100%; height: 20%;
+            background: linear-gradient(to bottom, transparent, rgba(14, 165, 233, 0.4), transparent);
+            box-shadow: 0 0 10px rgba(14,165,233,0.5);
+            animation: scan 2s linear infinite; opacity: 0; transition: 0.3s; pointer-events: none;
+        }
+        .upload-box:hover .scan-line { opacity: 1; }
+
+        /* Animation Keyframes */
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes borderSpin { 100% { transform: rotate(360deg); } }
+        @keyframes scan { 0% { top: -20%; } 100% { top: 100%; } }
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fastLoading { 0% { width: 0%; } 100% { width: 100%; } }
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+
+        .animate-pop { animation: fadeInScale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-glitch { animation: glitch 0.3s ease-in-out; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+<body class="min-h-screen flex items-center justify-center p-4 relative">
 
-    <!-- Lưới background -->
-    <div class="absolute inset-0 pointer-events-none" style="background-image: linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(14, 165, 233, 0.03) 1px, transparent 1px); background-size: 30px 30px; z-index: -1;"></div>
+    <div class="cyber-grid"></div>
 
-    <div class="glass-panel w-full max-w-md rounded-3xl p-8 relative overflow-hidden">
-        <!-- Decoration lines -->
-        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-500 via-fuchsia-500 to-sky-500"></div>
+    <!-- Môi trường lơ lửng -->
+    <div style="perspective: 1000px; width: 100%; max-width: 28rem;">
+        <div class="glass-panel w-full rounded-3xl p-8 relative overflow-hidden">
+            
+            <!-- Dải Neon trên cùng -->
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-500 via-fuchsia-500 to-sky-500 shadow-[0_0_15px_rgba(217,70,239,0.5)]"></div>
 
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/30 mb-4">
-                <i class="ph-duotone ph-file-code text-4xl text-sky-400 text-glow-cyan"></i>
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/40 mb-4 shadow-[0_0_20px_rgba(14,165,233,0.2)]">
+                    <i class="ph-duotone ph-cpu text-4xl text-sky-400 text-glow-cyan"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-white tracking-wide">DUSI <span class="text-fuchsia-400 text-glow-magenta">HAR</span> EXTRACTOR</h1>
+                <p class="text-xs font-semibold text-sky-300 mt-2 tracking-widest uppercase opacity-80">Phân tích cục bộ • Không cần mạng</p>
             </div>
-            <h1 class="text-2xl font-bold text-white tracking-wide">DUSI <span class="text-fuchsia-400 text-glow-magenta">HAR</span> EXTRACTOR</h1>
-            <p class="text-xs font-semibold text-slate-400 mt-2 tracking-wider uppercase">Hỗ trợ trích xuất Token 100% Offline</p>
-        </div>
 
-        <!-- Khung Upload (Đã xóa accept để iOS chọn được) -->
-        <label for="harInput" class="pulse-border border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-sky-400/5 transition-all duration-300 mb-6 group">
-            <i class="ph-duotone ph-cloud-arrow-up text-4xl text-sky-400 mb-3 group-hover:scale-110 transition-transform duration-300"></i>
-            <span class="font-bold text-slate-200 text-sm">CHẠM ĐỂ CHỌN FILE HAR</span>
-            <span class="text-xs text-slate-500 mt-1">Dữ liệu an toàn, không tải lên mạng</span>
-            <input type="file" id="harInput" class="hidden">
-        </label>
-
-        <!-- Trạng thái file -->
-        <div id="fileStatus" class="text-center text-sm font-bold mb-4 hidden rounded-xl py-3 bg-slate-900/50 border border-slate-700"></div>
-
-        <!-- Khung kết quả -->
-        <div id="resultArea" class="hidden animate-[fadeIn_0.5s_ease-out]">
-            <label class="block text-xs font-bold text-sky-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                <i class="ph-bold ph-key"></i> TOKEN CỦA BẠN:
+            <!-- Khung Upload -->
+            <label for="harInput" class="upload-box bg-black/40 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-sky-900/20 transition-all duration-300 mb-6 group">
+                <div class="scan-line"></div>
+                <i class="ph-duotone ph-fingerprint text-5xl text-sky-400 mb-3 group-hover:scale-110 group-hover:text-glow-cyan transition-all duration-300"></i>
+                <span class="font-bold text-white text-sm tracking-wide">CHẠM ĐỂ CHỌN FILE HAR</span>
+                <span class="text-xs text-slate-500 mt-1 uppercase tracking-wider">Hỗ trợ mọi thiết bị</span>
+                <input type="file" id="harInput" class="hidden">
             </label>
-            <div class="relative">
-                <textarea id="tokenOutput" rows="4" class="w-full bg-[#060913] border border-sky-500/30 rounded-xl p-4 text-sm font-medium text-emerald-400 break-all resize-none focus:outline-none focus:border-sky-500 transition-colors shadow-inner" readonly></textarea>
-                
-                <button id="btnCopy" class="absolute bottom-4 right-4 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-[0_0_15px_rgba(14,165,233,0.4)] transition-all flex items-center gap-2 uppercase tracking-wide">
-                    <i class="ph-bold ph-copy text-lg"></i> Bấm Copy
-                </button>
+
+            <!-- Trạng thái file -->
+            <div id="fileStatus" class="text-center text-sm font-bold mb-4 hidden rounded-xl py-3 bg-slate-900/60 border border-slate-700 backdrop-blur"></div>
+
+            <!-- Khung kết quả -->
+            <div id="resultArea" class="hidden animate-pop">
+                <label class="block text-xs font-bold text-emerald-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <i class="ph-fill ph-check-circle"></i> ĐÃ BÓC TÁCH THÀNH CÔNG:
+                </label>
+                <div class="relative group">
+                    <textarea id="tokenOutput" rows="4" class="w-full bg-[#030712] border border-emerald-500/40 rounded-xl p-4 text-sm font-medium text-emerald-300 break-all resize-none focus:outline-none focus:border-emerald-400 transition-colors shadow-[inset_0_0_15px_rgba(16,185,129,0.1)]" readonly></textarea>
+                    
+                    <button id="btnCopy" class="absolute bottom-4 right-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-bold py-2 px-5 rounded-lg shadow-[0_0_15px_rgba(16,185,129,0.5)] hover:shadow-[0_0_25px_rgba(16,185,129,0.8)] transition-all flex items-center gap-2 uppercase tracking-wide transform hover:-translate-y-1">
+                        <i class="ph-bold ph-copy text-lg"></i> COPY NGAY
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Thông báo chuyển hướng -->
-    <div id="redirectOverlay" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center opacity-0 invisible">
-        <i class="ph-fill ph-check-circle text-7xl text-emerald-400 mb-4 animate-bounce"></i>
-        <h2 class="text-3xl font-bold text-white mb-2">ĐÃ COPY TOKEN!</h2>
-        <p class="text-sky-400 font-medium text-lg">Đang đưa bạn về <span class="font-bold text-white">dusi.online</span>...</p>
+    <!-- Màn hình chuyển hướng (Rút ngắn thời gian còn 1.5s) -->
+    <div id="redirectOverlay" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex flex-col items-center justify-center opacity-0 invisible transition-all duration-300">
+        <div class="relative">
+            <div class="absolute inset-0 bg-emerald-500 rounded-full blur-xl opacity-50 animate-pulse"></div>
+            <i class="ph-fill ph-check-circle text-8xl text-emerald-400 mb-6 relative z-10 animate-[fadeInScale_0.5s_ease-out]"></i>
+        </div>
+        <h2 class="text-4xl font-bold text-white mb-3 text-glow-success uppercase tracking-widest animate-pop">Đã lưu vào bộ nhớ!</h2>
+        <p class="text-sky-400 font-semibold text-lg tracking-wide">Đang đưa bạn về <span class="text-white">DUSI.ONLINE</span></p>
         
-        <!-- Loading bar -->
-        <div class="w-64 h-2 bg-slate-800 rounded-full mt-6 overflow-hidden">
-            <div class="h-full bg-gradient-to-r from-sky-400 to-fuchsia-500 animate-[loading_2.5s_ease-in-out_forwards]"></div>
+        <!-- Thanh Loading siêu tốc -->
+        <div class="w-72 h-1.5 bg-slate-800 rounded-full mt-8 overflow-hidden shadow-[0_0_10px_rgba(14,165,233,0.3)]">
+            <div class="h-full bg-gradient-to-r from-sky-400 via-fuchsia-500 to-emerald-400 animate-[fastLoading_1.5s_ease-in-out_forwards]"></div>
         </div>
     </div>
-
-    <style>
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes loading { 0% { width: 0%; } 100% { width: 100%; } }
-    </style>
 
     <script>
         const harInput = document.getElementById('harInput');
@@ -106,8 +152,12 @@
             const file = e.target.files[0];
             if (!file) return;
 
+            // Kích hoạt animation glitch nhẹ khi nạp file
+            document.querySelector('.glass-panel').classList.add('animate-glitch');
+            setTimeout(() => document.querySelector('.glass-panel').classList.remove('animate-glitch'), 300);
+
             fileStatus.classList.remove('hidden');
-            fileStatus.innerHTML = `<span class="text-amber-400 flex items-center justify-center gap-2"><i class="ph-duotone ph-spinner animate-spin text-lg"></i> Đang đọc file: ${file.name}...</span>`;
+            fileStatus.innerHTML = `<span class="text-sky-400 flex items-center justify-center gap-2"><i class="ph-duotone ph-spinner-gap animate-spin text-xl"></i> Phân tích cấu trúc file...</span>`;
             resultArea.classList.add('hidden');
 
             const reader = new FileReader();
@@ -115,7 +165,7 @@
                 const content = event.target.result;
                 let token = null;
 
-                // Regex quét token
+                // Cào token
                 const match1 = content.match(/"name"\s*:\s*"msdk-itopencodeparam"\s*,\s*"value"\s*:\s*"([A-Fa-f0-9]+)"/i);
                 if (match1) {
                     token = match1[1];
@@ -124,34 +174,32 @@
                     if (match2) token = match2[1];
                 }
 
-                if (token) {
-                    fileStatus.innerHTML = `<span class="text-emerald-400 flex items-center justify-center gap-2"><i class="ph-fill ph-check-circle text-lg"></i> Phân tích thành công!</span>`;
-                    tokenOutput.value = token;
-                    resultArea.classList.remove('hidden');
-                } else {
-                    fileStatus.innerHTML = `<span class="text-rose-400 flex items-center justify-center gap-2"><i class="ph-fill ph-warning-circle text-lg"></i> Không tìm thấy Token trong file này.</span>`;
-                }
-            };
-
-            reader.onerror = function() {
-                fileStatus.innerHTML = `<span class="text-rose-400 flex items-center justify-center gap-2"><i class="ph-fill ph-x-circle text-lg"></i> Lỗi không thể đọc file!</span>`;
+                setTimeout(() => {
+                    if (token) {
+                        fileStatus.classList.add('hidden'); // Ẩn thông báo đi, show thẳng kết quả cho ngầu
+                        tokenOutput.value = token;
+                        resultArea.classList.remove('hidden');
+                    } else {
+                        fileStatus.innerHTML = `<span class="text-rose-400 flex items-center justify-center gap-2"><i class="ph-fill ph-warning-octagon text-xl text-glow-magenta"></i> Không tìm thấy Token!</span>`;
+                    }
+                }, 400); // Thêm delay xíu cho cảm giác "đang hack"
             };
 
             reader.readAsText(file);
         });
 
         btnCopy.addEventListener('click', () => {
-            // Copy token
+            // Thực thi Copy
             tokenOutput.select();
             document.execCommand('copy');
             
-            // Hiện màn hình chuyển hướng
+            // Bật màn hình lóa
             redirectOverlay.classList.remove('opacity-0', 'invisible');
             
-            // Chuyển hướng sau 2.5 giây
+            // Bay về dusi.online thần tốc sau 1.5 giây
             setTimeout(() => {
                 window.location.href = 'https://dusi.online/';
-            }, 2500);
+            }, 1500);
         });
     </script>
 </body>
